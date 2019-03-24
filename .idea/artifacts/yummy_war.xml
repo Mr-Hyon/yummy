@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="yummy:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="yummy.war">
+      <element id="artifact" artifact-name="yummy:war exploded" />
+    </root>
+  </artifact>
+</component>

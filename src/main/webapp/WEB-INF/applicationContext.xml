@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="yummy"/>
+
+    <!-- 配置取消订单job类  -->
+    <bean id="cancelOrderJob" class="yummy.util.CancelOrderJob"/>
+    <!-- 配置取消订单JobDetail 使用MethodInvokingJobDetailFactoryBean这种方式job类不需要实现Job接口-->
+    <bean id="cancelOrderJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="cancelOrderJob" />
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>execute</value>
+        </property>
+    </bean>
+    <!-- 配置取消订单简单触发器trigger，启动项目立即执行 -->
+    <bean id="simpleTrigger1" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+        <property name="jobDetail" ref="cancelOrderJobDetail"></property>
+        <property name="startDelay" value="500" />
+        <property name="repeatInterval" value="0" />
+        <property name="repeatCount" value="0" />
+    </bean>
+    <!-- 配置取消订单触发器trigger -->
+    <bean id="cancelOrderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean ">
+        <property name="jobDetail" ref="cancelOrderJobDetail"></property>
+        <property name="cronExpression" value="0 0/1 * * * ?"></property>
+    </bean>
+
+    <!-- 配置确认订单job类  -->
+    <bean id="confirmOrderJob" class="yummy.util.ConfirmOrderJob"/>
+    <!-- 配置取消订单JobDetail 使用MethodInvokingJobDetailFactoryBean这种方式job类不需要实现Job接口-->
+    <bean id="confirmOrderJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="confirmOrderJob" />
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>execute</value>
+        </property>
+    </bean>
+    <!-- 配置取消订单简单触发器trigger，启动项目立即执行 -->
+    <bean id="simpleTrigger2" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+        <property name="jobDetail" ref="confirmOrderJobDetail"></property>
+        <property name="startDelay" value="500" />
+        <property name="repeatInterval" value="0" />
+        <property name="repeatCount" value="0" />
+    </bean>
+    <!-- 配置取消订单触发器trigger -->
+    <bean id="confirmOrderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean ">
+        <property name="jobDetail" ref="confirmOrderJobDetail"></property>
+        <property name="cronExpression" value="0 0 * * * ?"></property>
+    </bean>
+
+    <!-- 配置调度工厂 -->
+    <bean id="SpringJobSchedulerFactoryBean"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="simpleTrigger1" />
+                <ref bean="cancelOrderTrigger" />
+                <ref bean="simpleTrigger2" />
+                <ref bean="confirmOrderTrigger" />
+            </list>
+        </property>
+    </bean>
+
+</beans>
