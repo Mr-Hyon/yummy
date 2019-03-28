@@ -17,6 +17,7 @@
         var seller_info = null;
         var seller_name = null;
         var seller_rid = null;
+        var seller_financial_info = null;
         $(function(){
             $.ajax({
                     url:"../seller/getCurrentSeller",
@@ -42,7 +43,40 @@
             document.getElementById("rname").innerHTML="店铺名称："+seller_name;
             document.getElementById("type").innerHTML="店铺类型："+sellerJsonObj.type;
             document.getElementById("location").innerHTML="店铺地址："+sellerJsonObj.location;
+
+            getFinancialInfo();
+
+            var info2show = "订单完成数：" + seller_financial_info.complete_order_num + "<br>" +
+                            "退款订单数：" + seller_financial_info.refund_order_num + "<br>" +
+                            "收入(未抽成)：" + seller_financial_info.origin_income + "<br>" +
+                            "收入(抽成后)：" + seller_financial_info.alter_income + "<br>" +
+                            "最常光顾客人：" + seller_financial_info.most_common_user;
+            document.getElementById("some_info").innerHTML = info2show;
+
         });
+
+        function getFinancialInfo(){
+            $.ajax({
+                    url:"../seller/getSellerFinanceInfo",
+                    type:'POST',
+                    async: false,
+                    data:{
+                        "rid": seller_rid
+                    },
+                    success:function(data){
+                        if(data!==null){
+                            seller_financial_info = JSON.parse(data);
+                        }
+                        else{
+                            alert("财务信息获取失败");
+                        }
+                    },
+                    error:function(){
+                        alert("请求错误");
+                    }
+                }
+            );
+        }
     </script>
 </head>
 <body>
@@ -63,6 +97,10 @@
         <p id="type" style="text-align:center;"></p>
         <p id="location" style="text-align:center;"></p>
     </div>
+
+    <h2>财务信息统计</h2>
+
+    <p id="some_info"></p>
 
 </div>
 </body>

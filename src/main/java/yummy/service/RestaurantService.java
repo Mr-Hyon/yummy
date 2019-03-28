@@ -30,4 +30,6 @@ public interface RestaurantService {
 
     public List<Restaurant> searchByKeyword(String keyword);
 
+    public int getSellerNum();
+
 }

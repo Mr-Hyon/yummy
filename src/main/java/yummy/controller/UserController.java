@@ -456,6 +456,17 @@ public class UserController {
         }
     }
 
+    @RequestMapping(value="/TerminateUser",produces="application/text; charset=utf-8")
+    @ResponseBody
+    public String terminateUser(@RequestParam("id") String id,
+                           HttpServletResponse response,
+                           HttpServletRequest request){
+        User user = userService.getUserById(Integer.parseInt(id));
+        user.setIsValid(false);
+        userService.updateUser(user);
+        return "success";
+    }
+
     public Long calcTimeDiff(String formal,String later) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Long diff = null;

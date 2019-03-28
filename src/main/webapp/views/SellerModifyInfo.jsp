@@ -71,7 +71,7 @@
                     },
                     success:function(data){
                         alert(data);
-                        window.location.href = "/yummy/seller/modifyInfoPage";
+                        window.location.href = "/yummy/home/index";
                     },
                     error:function(){
                         alert("请求错误");

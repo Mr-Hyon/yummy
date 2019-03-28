@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping("/seller")
@@ -313,9 +310,10 @@ public class SellerController {
         List<MyOrder> list = orderService.getOrderBySeller(rid);
         int complete_order_num = 0;
         int refund_order_num = 0;
-        HashMap<String,Integer> hm = new HashMap<>();
+        HashMap<Integer,Integer> hm = new HashMap<>();
         double origin_income = 0.0;
         double alter_income = 0.0;
+        JsonObject obj = new JsonObject();
         if(list.size()>0){
             //有订单记录
             for(int i=0;i<list.size();i++){
@@ -323,36 +321,49 @@ public class SellerController {
                     complete_order_num ++;
                     origin_income += list.get(i).getPrice();
                     alter_income += list.get(i).getPrice()/2;
-                    if(!hm.containsKey(String.valueOf(list.get(i).getUid()))){
-                        hm.put(String.valueOf(list.get(i).getUid()),1);
+                    if(!hm.containsKey(list.get(i).getUid())){
+                        hm.put(list.get(i).getUid(),1);
                     }
                     else{
-                        hm.put(String.valueOf(list.get(i).getUid()),hm.get(String.valueOf(list.get(i).getUid())) + 1);
+                        hm.put(list.get(i).getUid(),hm.get(list.get(i).getUid()) + 1);
                     }
                 }
                 else if(list.get(i).getState().equals("REFUND")){
                     refund_order_num++;
                     Long diff = calcTimeDiff(list.get(i).getPayTime(),list.get(i).getEndTime());
                     if(diff <= 60 * 1000){
-
+                        //do nothing
                     }
                     else if(diff <= 10 * 60 * 1000){
-
+                        origin_income += list.get(i).getPrice()/2;
+                        alter_income += list.get(i).getPrice()/4;
                     }
                     else{
-
+                        origin_income += list.get(i).getPrice();
+                        alter_income += list.get(i).getPrice()/2;
                     }
                 }
             }
+            obj.addProperty("complete_order_num",String.valueOf(complete_order_num));
+            obj.addProperty("refund_order_num",String.valueOf(refund_order_num));
+            obj.addProperty("origin_income",String.valueOf(origin_income));
+            obj.addProperty("alter_income",String.valueOf(alter_income));
+            int max_uid = getMaxKey(hm);
+            User user = userService.getUserById(max_uid);
+            obj.addProperty("most_common_user",user.getUname());
         }
         else{
             //无订单记录
-
+            obj.addProperty("complete_order_num","0");
+            obj.addProperty("refund_order_num","0");
+            obj.addProperty("origin_income","0");
+            obj.addProperty("alter_income","0");
+            obj.addProperty("most_common_user","null");
         }
-        return "";
+        return obj.toString();
     }
 
-    public Long calcTimeDiff(String formal,String later) {
+    private Long calcTimeDiff(String formal,String later) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Long diff = null;
         try {
@@ -363,4 +374,24 @@ public class SellerController {
         // 返回值为毫秒
         return diff;
     }
+
+    private int getMaxKey(HashMap<Integer , Integer> hashMap) {
+        int key   = 0;
+        int value = 0;
+        int flagKey   = 0;
+        int flagValue = 0;
+        Set<Map.Entry<Integer,Integer>> entrySet = hashMap.entrySet();
+        for (Map.Entry<Integer, Integer> entry : entrySet) {
+            //key value 代表每轮遍历出来的值
+            key   = entry.getKey();
+            value = entry.getValue();
+            if(flagValue < value ) {
+                //flagKey flagValue 当判断出最大值是将最大值赋予该变量
+                flagKey   = key;
+                flagValue = value;
+            }
+        }
+        return flagKey;
+    }
+
 }

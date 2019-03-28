@@ -1,5 +1,6 @@
 package yummy.dao.Impl;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -123,11 +124,28 @@ public class RestaurantDaoImpl implements RestaurantDao {
         sessionFactory = configuration.buildSessionFactory();
         session = sessionFactory.openSession();
         transaction = session.beginTransaction();
-        List<Restaurant> list = session.createCriteria(Restaurant.class).add(Restrictions.eq("isPassed",false)).list();
+        List<Restaurant> result = new ArrayList<>();
+        List<Restaurant> list1 = session.createCriteria(Restaurant.class).add(Restrictions.eq("isPassed",false)).list();
+        List<SellerInfo> list2 = session.createCriteria(SellerInfo.class).list();
+        boolean isFound = false;
+        if(list2 != null && list2.size()>0){
+            for(int i=0;i<list1.size();i++){
+                isFound = false;
+                for(int j=0;j<list2.size();j++){
+                    if(list2.get(j).getRid().equals(list1.get(i).getRid())){
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(!isFound){
+                    result.add(list1.get(i));
+                }
+            }
+        }
         transaction.commit();
         session.close();
         sessionFactory.close();
-        return list;
+        return result;
     }
 
     public void addSellerInfo(SellerInfo sellerInfo){

@@ -44,6 +44,9 @@ public class RestaurantServiceImpl implements RestaurantService{
     }
 
     public void addSellerInfo(SellerInfo sellerInfo){
+        Restaurant restaurant = restaurantDao.getRestaurantByRid(sellerInfo.getRid());
+        restaurant.setisPassed(false);
+        restaurantDao.modifyRestaurant(restaurant);
         restaurantDao.addSellerInfo(sellerInfo);
     }
 
@@ -53,6 +56,7 @@ public class RestaurantServiceImpl implements RestaurantService{
         restaurant.setRname(sellerInfo.getRname());
         restaurant.setType(sellerInfo.getType());
         restaurant.setLocation(sellerInfo.getLocation());
+        restaurant.setisPassed(true);
         sellerInfo.setIsChecked(true);
         restaurantDao.modifyRestaurant(restaurant);
         restaurantDao.modifySellerInfo(sellerInfo);
@@ -60,6 +64,9 @@ public class RestaurantServiceImpl implements RestaurantService{
 
     public void DenyInfoChange(String sid,String rid){
         SellerInfo sellerInfo = restaurantDao.getSellerInfoById(Integer.parseInt(sid));
+        Restaurant restaurant = restaurantDao.getRestaurantByRid(rid);
+        restaurant.setisPassed(true);
+        restaurantDao.modifyRestaurant(restaurant);
         restaurantDao.deleteSellerInfo(sellerInfo);
     }
 
@@ -72,5 +79,9 @@ public class RestaurantServiceImpl implements RestaurantService{
             return restaurantDao.getAllSeller();
         else
             return restaurantDao.searchByKeyword(keyword);
+    }
+
+    public int getSellerNum(){
+        return restaurantDao.getAllSeller().size();
     }
 }

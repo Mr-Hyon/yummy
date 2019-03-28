@@ -20,6 +20,8 @@ public interface OrderService {
 
     public List<MyOrder> getOrderBySeller(String rid);
 
+    public List<MyOrder> getAllOrder();
+
     public void cancelOrder(MyOrder myOrder);
 
     public MyOrder getOrderById(int id);

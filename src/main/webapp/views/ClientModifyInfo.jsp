@@ -91,6 +91,24 @@
                 });
             }
         }
+
+        function requestTerminateAccount(){
+            $.ajax({
+                url:"../client/TerminateUser",
+                type:'POST',
+                async: false,
+                data:{
+                    "id":client_id
+                },
+                success:function(data){
+                    alert(data);
+                    window.location.href = "/yummy/home/index";
+                },
+                error:function(){
+                    alert("请求错误");
+                }
+            });
+        }
     </script>
 </head>
 <body>
@@ -176,6 +194,9 @@
 
         <div style="text-align:center;">
             <button id="release" onclick="requestModifyInfo()">提交修改信息</button>
+        </div>
+        <div style="text-align:center;">
+            <button id="terminate" onclick="requestTerminateAccount()">彻底注销账号</button>
         </div>
     </div>
 </div>

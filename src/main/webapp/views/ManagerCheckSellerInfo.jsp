@@ -113,7 +113,8 @@
     <nav>
         <a href="/yummy/manager/checkNewSeller">审批新商家</a> |
         <a href="/yummy/manager/checkSellerInfo" class="selected">审批信息修改请求</a> |
-        <a href="/yummy/manager/financePage">网站信息统计</a>
+        <a href="/yummy/manager/financePage">网站信息统计</a> |
+        <a href="/yummy/home/index">返回主页</a>
     </nav>
     <h2>待审批修改信息清单</h2>
     <div class="col-sm-9 text" style="height:100%;width:75%">

@@ -107,4 +107,16 @@ public class UserDaoImpl implements UserDao{
         if(list.size()>0) return list.get(0);
         else return null;
     }
+
+    public List<User> getAllUser(){
+        Configuration configuration = new Configuration().configure();
+        sessionFactory = configuration.buildSessionFactory();
+        session = sessionFactory.openSession();
+        transaction = session.beginTransaction();
+        List<User> list = session.createCriteria(User.class).list();
+        transaction.commit();
+        session.close();
+        sessionFactory.close();
+        return list;
+    }
 }

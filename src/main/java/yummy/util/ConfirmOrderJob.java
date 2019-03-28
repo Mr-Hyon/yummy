@@ -21,7 +21,7 @@ public class ConfirmOrderJob {
     OrderService orderService;
 
     //订单有效时间15分钟
-    public static final long EFFTIVE_TIME = 12 * 60 * 60 * 1000;
+    public static final long EFFTIVE_TIME = 2 * 60 * 1000;
     private Logger logger = Logger.getLogger(ConfirmOrderJob.class);
 
     public void execute() throws JobExecutionException {

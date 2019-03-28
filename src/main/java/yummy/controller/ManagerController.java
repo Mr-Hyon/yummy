@@ -7,16 +7,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import yummy.model.MyOrder;
 import yummy.model.Restaurant;
 import yummy.model.SellerInfo;
+import yummy.model.User;
+import yummy.service.OrderService;
 import yummy.service.RestaurantService;
+import yummy.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Controller
 @RequestMapping("/manager")
@@ -24,6 +29,12 @@ public class ManagerController {
 
     @Autowired
     RestaurantService restaurantService;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    OrderService orderService;
 
     @RequestMapping("/login")
     public String login(){
@@ -155,5 +166,108 @@ public class ManagerController {
                                 HttpServletRequest request){
         restaurantService.DenyInfoChange(id,rid);
         return "success";
+    }
+
+    @RequestMapping(value="/getFinancialData",produces="application/text; charset=utf-8")
+    @ResponseBody
+    public String getFinancialData(HttpServletResponse response,
+                                   HttpServletRequest request){
+        List<MyOrder> list = orderService.getAllOrder();
+        int complete_order_num = 0;
+        int refund_order_num = 0;
+        int user_num = userService.getUserNum();
+        int seller_num = restaurantService.getSellerNum();
+        HashMap<String,Integer> user_hm = new HashMap<>();
+        HashMap<String,Integer> seller_hm = new HashMap<>();
+        double yummy_income = 0.0;
+        JsonObject obj = new JsonObject();
+        if(list.size()>0){
+            //有订单记录
+            for(int i=0;i<list.size();i++){
+                if(list.get(i).getState().equals("DONE")){
+                    complete_order_num ++;
+                    yummy_income += list.get(i).getPrice();
+                    if(!user_hm.containsKey(String.valueOf(list.get(i).getUid()))){
+                        user_hm.put(String.valueOf(list.get(i).getUid()),1);
+                    }
+                    else{
+                        user_hm.put(String.valueOf(list.get(i).getUid()),user_hm.get(String.valueOf(list.get(i).getUid())) + 1);
+                    }
+
+                    if(!seller_hm.containsKey(list.get(i).getRid())){
+                        seller_hm.put(list.get(i).getRid(),1);
+                    }
+                    else{
+                        seller_hm.put(list.get(i).getRid(),seller_hm.get(list.get(i).getRid()) + 1);
+                    }
+                }
+                else if(list.get(i).getState().equals("REFUND")){
+                    refund_order_num++;
+                    Long diff = calcTimeDiff(list.get(i).getPayTime(),list.get(i).getEndTime());
+                    if(diff <= 60 * 1000){
+                        //do nothing
+                    }
+                    else if(diff <= 10 * 60 * 1000){
+                        yummy_income += list.get(i).getPrice()/4;
+                    }
+                    else{
+                        yummy_income += list.get(i).getPrice()/2;
+                    }
+                }
+            }
+            obj.addProperty("user_num",user_num);
+            obj.addProperty("seller_num",seller_num);
+            obj.addProperty("complete_order_num",String.valueOf(complete_order_num));
+            obj.addProperty("refund_order_num",String.valueOf(refund_order_num));
+            obj.addProperty("total_income",String.valueOf(yummy_income));
+            String max_uid = getMaxKey(user_hm);
+            String max_rid = getMaxKey(seller_hm);
+            User user = userService.getUserById(Integer.parseInt(max_uid));
+            Restaurant restaurant = restaurantService.getSellerByRid(max_rid);
+            obj.addProperty("most_common_user",user.getUname());
+            obj.addProperty("most_welcome_seller",restaurant.getRname());
+        }
+        else{
+            //无订单记录
+            obj.addProperty("user_num",user_num);
+            obj.addProperty("seller_num",seller_num);
+            obj.addProperty("complete_order_num","0");
+            obj.addProperty("refund_order_num","0");
+            obj.addProperty("total_income","0");
+            obj.addProperty("most_common_user","null");
+            obj.addProperty("most_welcome_seller","null");
+        }
+        return obj.toString();
+    }
+
+    private Long calcTimeDiff(String formal,String later) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Long diff = null;
+        try {
+            diff = sdf.parse(later).getTime() - sdf.parse(formal).getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        // 返回值为毫秒
+        return diff;
+    }
+
+    private String getMaxKey(HashMap<String , Integer> hashMap) {
+        String key   = "0";
+        int value = 0;
+        String flagKey   = "0";
+        int flagValue = 0;
+        Set<Map.Entry<String,Integer>> entrySet = hashMap.entrySet();
+        for (Map.Entry<String, Integer> entry : entrySet) {
+            //key value 代表每轮遍历出来的值
+            key   = entry.getKey();
+            value = entry.getValue();
+            if(flagValue < value ) {
+                //flagKey flagValue 当判断出最大值是将最大值赋予该变量
+                flagKey   = key;
+                flagValue = value;
+            }
+        }
+        return flagKey;
     }
 }

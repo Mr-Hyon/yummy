@@ -150,4 +150,9 @@ public class OrderServiceImpl implements OrderService {
             return result;
         }
     }
+
+    public List<MyOrder> getAllOrder(){
+        List<MyOrder> all_My_order = orderDao.getAllOrder();
+        return all_My_order;
+    }
 }

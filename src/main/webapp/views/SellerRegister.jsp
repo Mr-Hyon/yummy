@@ -30,7 +30,13 @@
         </tr>
         <tr>
             <td><label>店铺类型：</label></td>
-            <td><input type="text" id="type" name="type"></td>
+            <td><select id="type" name="type">
+                <option value="咖啡店">咖啡店</option>
+                <option value="奶茶店">奶茶店</option>
+                <option value="中餐店">中餐店</option>
+                <option value="西餐店">西餐店</option>
+                <option value="日料店">日料店</option>
+            </select></td>
         </tr>
         <tr>
             <td><label>店铺地址：</label></td>
